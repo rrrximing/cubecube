@@ -1,1037 +1,569 @@
 <!DOCTYPE html>
-
 <html>
-
 <head>
-
-    <meta charset="utf-8">
-
-    <title>魔方编辑器 - 底部文字修复版</title>
-
-    <style>
-
-        /* 基础布局 */
-
-        body { margin: 0; display: flex; height: 100vh; overflow: hidden; background-color: #fcfcfc; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
-
-        
-
-        #left-panel { 
-
-            width: 240px; padding: 20px; background: #fff; 
-
-            box-shadow: 2px 0 15px rgba(0,0,0,0.03); 
-
-            display: flex; flex-direction: column; gap: 15px; z-index: 100; flex-shrink: 0; 
-
-        }
-
-        
-
-        #main-container { flex: 1; display: flex; position: relative; overflow: hidden; }
-
-        
-
-        #canvas-container { flex: 1; background: #ffffff; transition: flex 0.5s ease; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center; }
-
-        
-
-        #viewport-guide { position: absolute; border: 2px dashed #5A7D9A; pointer-events: none; display: none; z-index: 50; box-shadow: 0 0 0 5000px rgba(255,255,255,0.85); }
-
-        #bg-render-canvas { position: absolute; z-index: 1; pointer-events: none; display: none; }
-
-        
-
-        .right-panel-content { 
-
-            flex: 0; background: #ffffff; display: none; overflow-x: hidden; overflow-y: auto; 
-
-            transition: flex 0.5s ease; border-left: 1px solid #f0f0f0; position: relative; 
-
-        }
-
-        
-
-        .photo-active #canvas-container { flex: 1; } 
-
-        .photo-active #right-panel-photo { display: flex; flex: 1; flex-direction: row; padding: 60px 20px 40px; justify-content: space-around; align-items: flex-start; }
-
-
-
-        .motion-active #canvas-container { flex: 1; }
-
-        .motion-active #right-panel-motion { display: flex; flex: 1; flex-direction: row; padding: 60px 20px 40px; justify-content: space-around; align-items: flex-start; }
-
-
-
-        .exit-btn { 
-
-            position: absolute; top: 15px; right: 20px; padding: 8px 15px; 
-
-            background: #f5f5f5; border: 1px solid #eee; border-radius: 6px; 
-
-            cursor: pointer; font-size: 13px; color: #666; z-index: 10; transition: all 0.3s;
-
-        }
-
-        .exit-btn:hover { background: #B8A398; color: #fff; border-color: #B8A398; }
-
-        
-
-        .editor-main-zone { display: flex; flex-direction: column; align-items: center; width: 320px; flex-shrink: 0; }
-
-        .motion-steps-zone { display: flex; flex-direction: column; align-items: center; width: 340px; flex-shrink: 0; }
-
-
-
-        .tips-box {
-
-            width: 260px; padding: 20px; 
-
-            background-color: #f7f9fa; 
-
-            border: 1px solid #E1E8ED; border-radius: 12px;
-
-            font-size: 13px; line-height: 1.8; color: #5C6E7E;
-
-            text-align: left; white-space: pre-wrap; margin-top: 20px;
-
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03); position: relative;
-
-        }
-
-
-
-        #preview-tips {
-
-            position: absolute; bottom: 20px; left: 20px; margin-top: 0; z-index: 400;
-
-            background-color: rgba(247, 249, 250, 0.95); display: none;
-
-        }
-
-        
-
-        .tips-close-btn { position: absolute; top: 10px; right: 12px; cursor: pointer; font-size: 16px; color: #9BA9B4; font-weight: bold; }
-
-        .tips-title { font-weight: bold; color: #5A7D9A; font-size: 15px; margin-bottom: 12px; display: block; border-bottom: 1px solid #E1E8ED; padding-bottom: 5px; }
-
-        .tips-img { width: 100%; border-radius: 8px; margin-bottom: 15px; border: 1px solid #E1E8ED; background: #fff; }
-
-
-
-        button { padding: 10px; cursor: pointer; border: 1px solid #eee; background: white; border-radius: 8px; font-size: 13px; color: #5C6E7E; transition: all 0.3s; }
-
-        button:hover { background: #f9f9f9; border-color: #ddd; }
-
-        
-
-        button.primary { background: #5A7D9A; color: white; border: none; margin-top: 5px; font-weight: 500; }
-
-        button.primary:hover { background: #4A6A85; box-shadow: 0 4px 10px rgba(90,125,154,0.3); }
-
-
-
-        .run-step-btn, #run-all-btn, #download-video-btn { background: #86A697 !important; color: white !important; border: none !important; }
-
-
-
-        .step-card { width: 100%; background: #fdfdfd; border: 1px solid #f0f0f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; position: relative; box-sizing: border-box; }
-
-        .step-title { font-weight: bold; color: #5A7D9A; margin-bottom: 10px; display: block; border-bottom: 1px solid #f0f0f0; }
-
-        
-
-        #preview-controls { 
-
-            position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); 
-
-            display: none; gap: 12px; background: rgba(255,255,255,0.95); 
-
-            padding: 10px 20px; border-radius: 30px; 
-
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1); z-index: 300; 
-
-        }
-
-        .control-dot-btn { 
-
-            width: 42px; height: 42px; border-radius: 50%; border: none; 
-
-            background: #F0F2F5; color: #5A7D9A; display: flex; 
-
-            align-items: center; justify-content: center; cursor: pointer; font-size: 18px; 
-
-        }
-
-        .control-dot-btn.active { background: #5A7D9A; color: #fff; }
-
-
-
-        #preview-wrapper { 
-
-            position: relative; width: 300px; height: 300px; 
-
-            background: #f0f0f0; 
-
-            border: 2px solid #5A7D9A; overflow: hidden; 
-
-        }
-
-        #transform-container { position: absolute; cursor: move; border: 1px solid #5A7D9A; box-sizing: border-box; display: none; z-index: 5; }
-
-        #preview-img-ui { width: 100%; height: 100%; display: block; pointer-events: none; } 
-
-
-
-        .handle { position: absolute; width: 10px; height: 10px; background: #fff; border: 1px solid #5A7D9A; }
-
-        #bg-settings-menu { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: white; padding: 15px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); display: none; flex-direction: column; gap: 10px; z-index: 301; width: 220px; }
-
-        #motion-pause-btn {
-
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-
-            padding: 12px 30px; background: #B8A398; color: white; border: none;
-
-            border-radius: 30px; font-weight: bold; cursor: pointer; display: none;
-
-            z-index: 2000; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-
-        }
-
-        .step-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px; }
-
-        .step-row select, .step-row input { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; color: #5C6E7E; }
-
-        .multi-select { display: flex; gap: 5px; }
-
-        .multi-btn { padding: 4px 10px; border: 1px solid #e0e0e0; cursor: pointer; border-radius: 6px; background: #fff; color: #5C6E7E; }
-
-        .multi-btn.active { background: #5A7D9A; color: #fff; border-color: #5A7D9A; }
-
-        .dir-controls { display: flex; flex-direction: column; gap: 5px; background: #f8f9fa; padding: 10px; border-radius: 8px; margin-top: 5px; font-size: 12px; border: 1px solid #eee; }
-
-
-
-        /* 底部信息文字：严格改动 */
-
-        #fixed-footer-text {
-
-            position: fixed; 
-
-            bottom: 30px;      /* 距离最底边30像素 */
-
-            left: 0; 
-
-            right: 0; 
-
-            text-align: center;
-
-            font-size: 13px; 
-
-            color: #8899a6;    /* 稍微深一点的颜色确保能看到 */
-
-            line-height: 1.6;
-
-            pointer-events: none; 
-
-            z-index: 9999;     /* 确保在所有元素的最顶层 */
-
-            transition: opacity 0.3s;
-
-        }
-
-    </style>
-
+<meta charset="utf-8">
+<title>魔方编辑器 - 顶部文字调整版</title>
+<style>
+/* 基础布局 */
+body { margin: 0; display: flex; height: 100vh; overflow: hidden; background-color: #fcfcfc; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
+
+#left-panel {
+width: 240px; padding: 20px; background: #fff;
+box-shadow: 2px 0 15px rgba(0,0,0,0.03);
+display: flex; flex-direction: column; gap: 15px; z-index: 100; flex-shrink: 0;
+}
+
+#main-container { flex: 1; display: flex; position: relative; overflow: hidden; }
+
+#canvas-container { flex: 1; background: #ffffff; transition: flex 0.5s ease; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center;
+}
+
+#viewport-guide { position: absolute; border: 2px dashed #5A7D9A; pointer-events: none; display: none; z-index: 50; box-shadow: 0 0 0 5000px rgba(255,255,255,0.85);
+}
+#bg-render-canvas { position: absolute; z-index: 1; pointer-events: none; display: none; }
+
+.right-panel-content {
+flex: 0; background: #ffffff; display: none; overflow-x: hidden; overflow-y: auto;
+transition: flex 0.5s ease; border-left: 1px solid #f0f0f0; position: relative;
+}
+
+.photo-active #canvas-container { flex: 1; }
+.photo-active #right-panel-photo { display: flex; flex: 1; flex-direction: row; padding: 60px 20px 40px; justify-content: space-around; align-items: flex-start; }
+.motion-active #canvas-container { flex: 1; }
+.motion-active #right-panel-motion { display: flex; flex: 1; flex-direction: row; padding: 60px 20px 40px; justify-content: space-around; align-items: flex-start; }
+.exit-btn {
+position: absolute; top: 15px; right: 20px; padding: 8px 15px;
+background: #f5f5f5; border: 1px solid #eee; border-radius: 6px;
+cursor: pointer; font-size: 13px; color: #666; z-index: 10; transition: all 0.3s;
+}
+.exit-btn:hover { background: #B8A398; color: #fff; border-color: #B8A398; }
+
+.editor-main-zone { display: flex; flex-direction: column; align-items: center; width: 320px; flex-shrink: 0; }
+.motion-steps-zone { display: flex; flex-direction: column; align-items: center; width: 340px; flex-shrink: 0; }
+.tips-box {
+width: 260px; padding: 20px;
+background-color: #f7f9fa;
+border: 1px solid #E1E8ED; border-radius: 12px;
+font-size: 13px; line-height: 1.8; color: #5C6E7E;
+text-align: left; white-space: pre-wrap; margin-top: 20px;
+box-shadow: 0 4px 10px rgba(0,0,0,0.03); position: relative;
+}
+#preview-tips {
+position: absolute; bottom: 20px; left: 20px; margin-top: 0; z-index: 400;
+background-color: rgba(247, 249, 250, 0.95); display: none;
+}
+
+.tips-close-btn { position: absolute; top: 10px; right: 12px; cursor: pointer; font-size: 16px; color: #9BA9B4; font-weight: bold; }
+.tips-title { font-weight: bold; color: #5A7D9A; font-size: 15px; margin-bottom: 12px; display: block; border-bottom: 1px solid #E1E8ED; padding-bottom: 5px; }
+.tips-img { width: 100%; border-radius: 8px; margin-bottom: 15px; border: 1px solid #E1E8ED; background: #fff; }
+button { padding: 10px; cursor: pointer; border: 1px solid #eee; background: white; border-radius: 8px; font-size: 13px; color: #5C6E7E;
+transition: all 0.3s; }
+button:hover { background: #f9f9f9; border-color: #ddd; }
+
+button.primary { background: #5A7D9A; color: white; border: none; margin-top: 5px; font-weight: 500; }
+button.primary:hover { background: #4A6A85; box-shadow: 0 4px 10px rgba(90,125,154,0.3); }
+.run-step-btn, #run-all-btn, #download-video-btn { background: #86A697 !important; color: white !important; border: none !important; }
+.step-card { width: 100%; background: #fdfdfd; border: 1px solid #f0f0f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; position: relative; box-sizing: border-box;
+}
+.step-title { font-weight: bold; color: #5A7D9A; margin-bottom: 10px; display: block; border-bottom: 1px solid #f0f0f0; }
+
+#preview-controls {
+position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+display: none; gap: 12px; background: rgba(255,255,255,0.95);
+padding: 10px 20px; border-radius: 30px;
+box-shadow: 0 8px 32px rgba(0,0,0,0.1); z-index: 300;
+}
+.control-dot-btn {
+width: 42px; height: 42px; border-radius: 50%; border: none;
+background: #F0F2F5; color: #5A7D9A; display: flex;
+align-items: center; justify-content: center; cursor: pointer; font-size: 18px;
+}
+.control-dot-btn.active { background: #5A7D9A; color: #fff; }
+#preview-wrapper {
+position: relative; width: 300px; height: 300px;
+background: #f0f0f0;
+border: 2px solid #5A7D9A; overflow: hidden;
+}
+#transform-container { position: absolute; cursor: move; border: 1px solid #5A7D9A; box-sizing: border-box; display: none; z-index: 5; }
+#preview-img-ui { width: 100%; height: 100%; display: block; pointer-events: none; }
+.handle { position: absolute; width: 10px; height: 10px; background: #fff; border: 1px solid #5A7D9A; }
+#bg-settings-menu { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: white; padding: 15px; border-radius: 12px;
+box-shadow: 0 8px 20px rgba(0,0,0,0.1); display: none; flex-direction: column; gap: 10px; z-index: 301; width: 220px; }
+#motion-pause-btn {
+position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+padding: 12px 30px; background: #B8A398; color: white; border: none;
+border-radius: 30px; font-weight: bold; cursor: pointer; display: none;
+z-index: 2000; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+.step-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px; }
+.step-row select, .step-row input { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #e0e0e0; color: #5C6E7E; }
+.multi-select { display: flex; gap: 5px; }
+.multi-btn { padding: 4px 10px; border: 1px solid #e0e0e0; cursor: pointer; border-radius: 6px; background: #fff; color: #5C6E7E; }
+.multi-btn.active { background: #5A7D9A; color: #fff; border-color: #5A7D9A; }
+.dir-controls { display: flex; flex-direction: column; gap: 5px; background: #f8f9fa; padding: 10px; border-radius: 8px; margin-top: 5px; font-size: 12px;
+border: 1px solid #eee; }
+
+/* 调整后的文字位置：从 bottom 改为 top */
+#fixed-footer-text {
+position: fixed;
+top: 20px;         /* 距离顶边20像素 */
+left: 0;
+right: 0;
+text-align: center;
+font-size: 13px;
+color: #8899a6;
+line-height: 1.6;
+pointer-events: none;
+z-index: 9999;
+transition: opacity 0.3s;
+}
+
+/* 打赏弹窗样式 */
+#reward-modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center;
+    z-index: 10000;
+}
+.reward-content {
+    background: white; padding: 25px; border-radius: 15px; position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;
+}
+.reward-img { max-width: 280px; height: auto; border-radius: 10px; border: 1px solid #eee; }
+.reward-close {
+    position: absolute; top: 10px; right: 15px; cursor: pointer;
+    font-size: 22px; color: #999; font-weight: bold;
+}
+</style>
 </head>
-
 <body>
+<div id="fixed-footer-text">
+视频版详细教程链接：<br>
+（欢迎在某站关注博主哦( ✿◡‿◡ )
+</div>
 
-
-
-    <div id="fixed-footer-text">
-
-        视频版详细教程链接：<br>
-
-        （欢迎在某站关注博主哦(✿◡‿◡)
-
+<div id="reward-modal" onclick="closeReward()">
+    <div class="reward-content" onclick="event.stopPropagation()">
+        <span class="reward-close" onclick="closeReward()">✕</span>
+        <h3 style="color:#5A7D9A; margin-top:0; margin-bottom:15px;">很高兴能帮到您！ ( ✿◡‿◡ )</h3>
+        <img class="reward-img" src="https://s41.ax1x.com/2026/01/19/pZ6188P.jpg" alt="收款码">
+        <p style="font-size:13px; color:#8899a6; margin-top:15px; margin-bottom:0;">无论多少，您的鼓励是我持续更新的最大动力，感谢！</p>
     </div>
+</div>
 
+<div id="left-panel">
+<h2 style="font-size: 18px; color: #5A7D9A; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">魔方配置</h2>
+<div class="control-group"><label>1. 形态</label><div style="display:flex; gap:8px;"><button onclick="changeShape(0)">直角</button><button onclick="changeShape(0.12)">圆角</button></div></div>
+<div class="control-group"><label>2. 填充色</label><input type="color" id="faceColor" value="#eeeeee" style="width:100%; border:none; height:30px;"></div>
+<div class="control-group"><label>3. 线条色</label><input type="color" id="lineColor" value="#000000" style="width:100%; border:none; height:30px;"></div>
+<div class="control-group"><label>4. 粗细</label><input type="range" id="lineWidth" min="0" max="50" value="8" style="width:100%;"></div>
+<div class="control-group"><label>5. 透明度</label><input type="range" id="lineOpacity" min="0" max="1" step="0.01" value="1" style="width:100%;"></div>
+<div class="control-group"><label>6. 亮度</label><input type="range" id="sceneBrightness" min="0.5" max="4" step="0.1" value="2.2" style="width:100%;"></div>
+<hr style="width:100%; border:0; border-top:1px solid #eee; margin:10px 0;">
+<button class="primary" onclick="toggleMode('photo')">进入照片模式</button>
+<button class="primary" style="background:#9BA9B4;" onclick="toggleMode('motion')">进入运动模式</button>
+<button id="preview-mode-btn" class="primary" style="background:#5A7D9A;" onclick="enterPreviewMode()">进入预览模式</button>
+<button class="primary" style="background:#B8A398; margin-top:5px;" onclick="openReward()">支持作者（自主打赏）</button>
+</div>
+<button id="motion-pause-btn" onclick="togglePause()">暂停运动</button>
+<div id="main-container">
+<div id="canvas-container">
+<canvas id="bg-render-canvas"></canvas>
+<div id="viewport-guide"></div>
 
-
-    <div id="left-panel">
-
-        <h2 style="font-size: 18px; color: #5A7D9A; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">魔方配置</h2>
-
-        <div class="control-group"><label>1. 形态</label><div style="display:flex; gap:8px;"><button onclick="changeShape(0)">直角</button><button onclick="changeShape(0.12)">圆角</button></div></div>
-
-        <div class="control-group"><label>2. 填充色</label><input type="color" id="faceColor" value="#eeeeee" style="width:100%; border:none; height:30px;"></div>
-
-        <div class="control-group"><label>3. 线条色</label><input type="color" id="lineColor" value="#000000" style="width:100%; border:none; height:30px;"></div>
-
-        <div class="control-group"><label>4. 粗细</label><input type="range" id="lineWidth" min="0" max="50" value="8" style="width:100%;"></div>
-
-        <div class="control-group"><label>5. 透明度</label><input type="range" id="lineOpacity" min="0" max="1" step="0.01" value="1" style="width:100%;"></div>
-
-        <div class="control-group"><label>6. 亮度</label><input type="range" id="sceneBrightness" min="0.5" max="4" step="0.1" value="2.2" style="width:100%;"></div>
-
-        <hr style="width:100%; border:0; border-top:1px solid #eee; margin:10px 0;">
-
-        <button class="primary" onclick="toggleMode('photo')">进入照片模式</button>
-
-        <button class="primary" style="background:#9BA9B4;" onclick="toggleMode('motion')">进入运动模式</button>
-
-        <button id="preview-mode-btn" class="primary" style="background:#5A7D9A;" onclick="enterPreviewMode()">进入预览模式</button>
-
-    </div>
-
-
-
-    <button id="motion-pause-btn" onclick="togglePause()">暂停运动</button>
-
-
-
-    <div id="main-container">
-
-        <div id="canvas-container">
-
-            <canvas id="bg-render-canvas"></canvas>
-
-            <div id="viewport-guide"></div>
-
-            
-
-            <div id="preview-tips" class="tips-box">
-
-                <div class="tips-close-btn" onclick="this.parentElement.style.display='none'">✕</div>
-
-                <span class="tips-title">💡 Tips：</span>
-
+<div id="preview-tips" class="tips-box">
+<div class="tips-close-btn" onclick="this.parentElement.style.display='none'"> ✕ </div>
+<span class="tips-title"> 💡  Tips：</span>
 1、强烈建议自己录屏运动过程，那样清晰度会高于网页保存的视频（导出设置太难了博主努力克服中……）
-
 2、点击播放按钮，会定格1.5秒后开始播放，麻烦耐心一些哦(*^_^*)
-
 3、播放完需手动点击复原按钮回到初始状态，可以反复播放哦。
-
 4、录屏前可关闭本窗口，保证不会录到乱七八糟的东西(￣▽￣)
-
-
-
-            </div>
-
-
-
-            <div id="bg-settings-menu">
-
-                <label style="font-size: 12px; font-weight: bold; color: #5A7D9A;">画面比例</label>
-
-                <select id="aspect-ratio" onchange="updateViewport()">
-
-                    <option value="1:1">1:1</option><option value="2:3">2:3</option><option value="3:2">3:2</option><option value="3:4">3:4</option><option value="4:3">4:3</option><option value="9:16">9:16</option><option value="16:9">16:9</option>
-
-                </select>
-
-                <div style="display:flex; flex-wrap:wrap; gap:5px;">
-
-                    <button onclick="document.getElementById('bg-color-picker').click()">纯色</button>
-
-                    <button style="background:#86A697; color:#fff; font-size:11px;" onclick="setBackground('color', '#00ff00')">绿幕</button>
-
-                    <button onclick="document.getElementById('bg-file-input').click()">图片</button>
-
-                </div>
-
-                <input type="color" id="bg-color-picker" style="display:none" oninput="setBackground('color', this.value)">
-
-                <input type="file" id="bg-file-input" style="display:none" accept="image/*" onchange="setBackground('image', this)">
-
-            </div>
-
-
-
-            <div id="preview-controls">
-
-                <div class="control-dot-btn" onclick="toggleBgMenu()" title="背景">🖼️</div>
-
-                <div id="lock-btn" class="control-dot-btn" onclick="toggleLock()" title="锁定">🔒</div>
-
-                <div class="control-dot-btn" onclick="manualReset()" title="复原魔方">↺</div>
-
-                <div id="play-btn" class="control-dot-btn" onclick="startExport()" title="开始运动并导出">▶</div>
-
-                <div class="control-dot-btn" onclick="exitPreviewMode()" title="退出">✕</div>
-
-            </div>
-
-            <button id="download-video-btn" onclick="downloadMp4()" style="position: absolute; bottom: 80px; right: 20px; display: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; z-index: 300;">💾 下载高清视频</button>
-
-        </div>
-
-
-
-        <div id="right-panel-photo" class="right-panel-content">
-
-            <div class="exit-btn" onclick="toggleMode('home')">✕ 保存并退出编辑</div>
-
-            <div class="editor-main-zone">
-
-                <h3 id="face-name" style="margin-top:0; color: #5A7D9A;">点击魔方选择面</h3>
-
-                <div id="preview-wrapper">
-
-                    <div id="transform-container">
-
-                        <img id="preview-img-ui">
-
-                        <div class="handle nw"></div><div class="handle ne"></div><div class="handle sw"></div><div class="handle se"></div><div class="handle n"></div><div class="handle s"></div><div class="handle w"></div><div class="handle e"></div>
-
-                    </div>
-
-                </div>
-
-                <div style="display:flex; gap:10px; margin-top:20px; width:300px;">
-
-                    <button onclick="rotateImage()">旋转</button>
-
-                    <button class="primary" style="margin:0; flex:2;" onclick="document.getElementById('file-input').click()">上传图片</button>
-
-                </div>
-
-                <input type="file" id="file-input" style="display:none;" onchange="handleUpload(event)">
-
-            </div>
-
-            <div class="tips-box">
-
-                <span class="tips-title">💡 Tips：</span>
-
+</div>
+<div id="bg-settings-menu">
+<label style="font-size: 12px; font-weight: bold; color: #5A7D9A;">画面比例</label>
+<select id="aspect-ratio" onchange="updateViewport()">
+<option value="1:1">1:1</option><option value="2:3">2:3</option><option value="3:2">3:2</option><option value="3:4">3:4</option><option value="4:3">4:3</option><option value="9:16">9:16</option><option value="16:9">16:9</option>
+</select>
+<div style="display:flex; flex-wrap:wrap; gap:5px;">
+<button onclick="document.getElementById('bg-color-picker').click()">纯色</button>
+<button style="background:#86A697; color:#fff; font-size:11px;" onclick="setBackground('color', '#00ff00')">绿幕</button>
+<button onclick="document.getElementById('bg-file-input').click()">图片</button>
+</div>
+<input type="color" id="bg-color-picker" style="display:none" oninput="setBackground('color', this.value)">
+<input type="file" id="bg-file-input" style="display:none" accept="image/*" onchange="setBackground('image', this)">
+</div>
+<div id="preview-controls">
+<div class="control-dot-btn" onclick="toggleBgMenu()" title="背景"> 🖼️ </div>
+<div id="lock-btn" class="control-dot-btn" onclick="toggleLock()" title="锁定"> 🔒 </div>
+<div class="control-dot-btn" onclick="manualReset()" title="复原魔方"> ↺ </div>
+<div id="play-btn" class="control-dot-btn" onclick="startExport()" title="开始运动并导出"> ▶ </div>
+<div class="control-dot-btn" onclick="exitPreviewMode()" title="退出"> ✕ </div>
+</div>
+<button id="download-video-btn" onclick="downloadMp4()" style="position: absolute; bottom: 80px; right: 20px; display: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; z-index: 300;"> 💾  下载高清视频</button>
+</div>
+<div id="right-panel-photo" class="right-panel-content">
+<div class="exit-btn" onclick="toggleMode('home')"> ✕  保存并退出编辑</div>
+<div class="editor-main-zone">
+<h3 id="face-name" style="margin-top:0; color: #5A7D9A;">点击魔方选择面</h3>
+<div id="preview-wrapper">
+<div id="transform-container">
+<img id="preview-img-ui">
+<div class="handle nw"></div><div class="handle ne"></div><div class="handle sw"></div><div class="handle se"></div><div class="handle n"></div><div class="handle s"></div><div class="handle w"></div><div class="handle e"></div>
+</div>
+</div>
+<div style="display:flex; gap:10px; margin-top:20px; width:300px;">
+<button onclick="rotateImage()">旋转</button>
+<button class="primary" style="margin:0; flex:2;" onclick="document.getElementById('file-input').click()">上传图片</button>
+</div>
+<input type="file" id="file-input" style="display:none;" onchange="handleUpload(event)">
+</div>
+<div class="tips-box">
+<span class="tips-title"> 💡  Tips：</span>
 1、请务必单击选中魔方的一个面之后再上传图片哦。
-
 2、上传同一张图片两次可能会卡顿，如果实在想要，可以准备两张一样的图片^_^
-
 3、将想第一个展示的图片上传到“前面”会便于后续编辑哦。
-
-            </div>
-
-        </div>
-
-
-
-        <div id="right-panel-motion" class="right-panel-content">
-
-            <div class="exit-btn" onclick="toggleMode('home')">✕ 保存并退出</div>
-
-            <div class="motion-steps-zone">
-
-                <div id="steps-container" style="width:100%;"></div>
-
-                <div class="add-step-btn" onclick="addNewStep()">+</div>
-
-                <button id="run-all-btn" onclick="runAllSteps()">运行全部步骤</button>
-
-            </div>
-
-            <div class="tips-box">
-
-                <span class="tips-title">💡 Tips：</span>
-
-                <img class="tips-img" src="https://s41.ax1x.com/2026/01/19/pZ6ir3n.png" alt="魔方三轴示意图">
-
+</div>
+</div>
+<div id="right-panel-motion" class="right-panel-content">
+<div class="exit-btn" onclick="toggleMode('home')"> ✕  保存并退出</div>
+<div class="motion-steps-zone">
+<div id="steps-container" style="width:100%;"></div>
+<div class="add-step-btn" onclick="addNewStep()">+</div>
+<button id="run-all-btn" onclick="runAllSteps()">运行全部步骤</button>
+</div>
+<div class="tips-box">
+<span class="tips-title"> 💡  Tips：</span>
+<img class="tips-img" src="https://s41.ax1x.com/2026/01/19/pZ6ir3n.png" alt="魔方三轴示意图">
 1、参考图示理解 X、Y、Z 轴切割、运动方向。
-
 2、每次运行都会从步骤一开始，运行到你选择的步骤结束，定格1.2秒后还原到初始状态。
-
 3、暂停运动用于观察记录运动中的魔方，如果你要进行下一步操作，请先点击继续运动，并等待运动完成哦。
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-
-    <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script>
-
-
-
-    <script type="module">
-
-        import * as THREE from 'three';
-
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-        import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-
-
-
-        let scene, camera, renderer, controls, cubes = [];
-
-        let ambientLight, dirLight;
-
-        let selectedFaceDir = null, isAnimating = false, stepCount = 0;
-
-        let faceData = Array.from({length:6}, () => ({ img: null, rotation: 0, rect: { x: 0, y: 0, w: 300, h: 300 } }));
-
-        
-
-        let mediaRecorder, chunks = [];
-
-        let innerBgColor = "#ffffff", innerBgImg = null;
-
-        let offscreenCanvas, offscreenCtx;
-
-
-
-        let isPaused = false;
-
-        window.togglePause = () => {
-
-            isPaused = !isPaused;
-
-            const btn = document.getElementById('motion-pause-btn');
-
-            btn.innerText = isPaused ? "继续运动" : "暂停运动";
-
-            btn.style.background = isPaused ? "#86A697" : "#B8A398";
-
-        };
-
-
-
-        function init() {
-
-            scene = new THREE.Scene();
-
-            scene.background = new THREE.Color(0xffffff);
-
-            const container = document.getElementById('canvas-container');
-
-            camera = new THREE.PerspectiveCamera(45, container.clientWidth/container.clientHeight, 0.1, 1000);
-
-            camera.position.set(6, 6, 6);
-
-            
-
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-
-            renderer.setPixelRatio(window.devicePixelRatio);
-
-            renderer.setSize(container.clientWidth, container.clientHeight);
-
-            renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-            renderer.domElement.style.position = 'relative';
-
-            renderer.domElement.style.zIndex = '10';
-
-            container.appendChild(renderer.domElement);
-
-            
-
-            controls = new OrbitControls(camera, renderer.domElement);
-
-            ambientLight = new THREE.AmbientLight(0xffffff, 2.2); scene.add(ambientLight);
-
-            dirLight = new THREE.DirectionalLight(0xffffff, 0.8); dirLight.position.set(5, 5, 5); scene.add(dirLight);
-
-
-
-            createCube(0); 
-
-            ['faceColor', 'lineColor', 'lineWidth', 'lineOpacity'].forEach(id => {
-
-                document.getElementById(id).addEventListener('input', updateCubeMaterials);
-
-            });
-
-            document.getElementById('sceneBrightness').addEventListener('input', (e) => {
-
-                const val = parseFloat(e.target.value);
-
-                ambientLight.intensity = val;
-
-                dirLight.intensity = val * 0.36;
-
-            });
-
-
-
-            initTransformLogic(); addNewStep(); animate();
-
-            container.addEventListener('mousedown', onCubeClick);
-
-            offscreenCanvas = document.createElement('canvas');
-
-            offscreenCtx = offscreenCanvas.getContext('2d');
-
-        }
-
-
-
-        async function performMultiDirectionRotation(type, layers, layerDirMap, layerAngleMap, speed) { 
-
-            return new Promise((resolve) => { 
-
-                const groups = []; 
-
-                const maxAngle = Math.max(...Object.values(layerAngleMap));
-
-                layers.forEach(layerNum => { 
-
-                    const group = new THREE.Group(); 
-
-                    let axis;
-
-                    if (type === 'x') axis = new THREE.Vector3(1, 0, 0);
-
-                    else if (type === 'y') axis = new THREE.Vector3(0, 0, 1);
-
-                    else axis = new THREE.Vector3(0, 1, 0); 
-
-                    const angle = layerAngleMap[layerNum];
-
-                    group.userData = { 
-
-                        targetRad: (angle * Math.PI / 180) * (layerDirMap[layerNum] === 'cw' ? -1 : 1), 
-
-                        totalRad: angle * Math.PI / 180,
-
-                        axis: axis, 
-
-                        currentRad: 0,
-
-                        stepSpeed: (angle / maxAngle) * speed * 0.015 
-
-                    }; 
-
-                    scene.add(group); 
-
-                    const targetIdx = layerNum - 1; 
-
-                    cubes.forEach(cube => { 
-
-                        const pos = cube.userData.grid; 
-
-                        let match = false;
-
-                        if (type === 'x') match = (Math.round(pos.x) === (1 - targetIdx)); 
-
-                        else if (type === 'y') match = (Math.round(pos.z) === (1 - targetIdx));
-
-                        else if (type === 'z') match = (Math.round(pos.y) === (targetIdx - 1));
-
-                        if (match) group.add(cube); 
-
-                    }); 
-
-                    groups.push(group); 
-
-                }); 
-
-                function anim() { 
-
-                    if (isPaused) { requestAnimationFrame(anim); return; }
-
-                    let done = true; 
-
-                    groups.forEach(g => { 
-
-                        const rem = g.userData.totalRad - Math.abs(g.userData.currentRad); 
-
-                        if (rem > 0.001) { 
-
-                            done = false; 
-
-                            const step = (g.userData.stepSpeed > rem ? rem : g.userData.stepSpeed) * Math.sign(g.userData.targetRad); 
-
-                            g.rotateOnAxis(g.userData.axis, step); 
-
-                            g.userData.currentRad += step; 
-
-                        } 
-
-                    }); 
-
-                    if (!done) requestAnimationFrame(anim); 
-
-                    else { 
-
-                        groups.forEach(g => { 
-
-                            const m = new THREE.Matrix4(); 
-
-                            [...g.children].forEach(c => { 
-
-                                c.updateMatrixWorld(); 
-
-                                m.copy(c.matrixWorld); 
-
-                                scene.add(c); 
-
-                                c.matrix.copy(m); 
-
-                                c.matrix.decompose(c.position, c.quaternion, c.scale); 
-
-                                c.position.set(Math.round(c.position.x), Math.round(c.position.y), Math.round(c.position.z)); 
-
-                                c.userData.grid = { ...c.position }; 
-
-                            }); 
-
-                            scene.remove(g); 
-
-                        }); 
-
-                        resolve(); 
-
-                    } 
-
-                } 
-
-                anim(); 
-
-            }); 
-
-        }
-
-
-
-        async function internalRunAll(shouldAutoReset = true, showPauseUI = false) { 
-
-            resetToInitial(); updateCubeMaterials(); 
-
-            if (showPauseUI) document.getElementById('motion-pause-btn').style.display = 'block';
-
-            const cards = document.querySelectorAll('.step-card'); 
-
-            for (let card of cards) { 
-
-                const type = card.querySelector('.type-sel').value; 
-
-                const layers = card.dataset.layers.split(',').filter(x => x).map(Number); 
-
-                const speed = parseInt(card.querySelector('.speed-sel').value); 
-
-                const layerDirMap = {}; const layerAngleMap = {};
-
-                card.querySelectorAll('.layer-dir').forEach(sel => { layerDirMap[sel.dataset.layer] = sel.value; }); 
-
-                card.querySelectorAll('.layer-angle').forEach(sel => { layerAngleMap[sel.dataset.layer] = parseInt(sel.value); });
-
-                if (type !== 'none' && layers.length > 0) { 
-
-                    await performMultiDirectionRotation(type, layers, layerDirMap, layerAngleMap, speed); 
-
-                    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); 
-
-                } 
-
-            }
-
-            if (shouldAutoReset) { 
-
-                let waitTime = 1200; 
-
-                while(waitTime > 0) { if (!isPaused) waitTime -= 16; await new Promise(r => setTimeout(r, 16)); }
-
-                resetToInitial(); updateCubeMaterials(); 
-
-            }
-
-            document.getElementById('motion-pause-btn').style.display = 'none';
-
-            isPaused = false;
-
-        }
-
-
-
-        window.runSingleStep = async function(id) { 
-
-            if (isAnimating) return; isAnimating = true; isPaused = false;
-
-            document.getElementById('motion-pause-btn').style.display = 'block';
-
-            const allCards = Array.from(document.querySelectorAll('.step-card')); 
-
-            const targetCard = document.getElementById(`step-${id}`); 
-
-            const targetIndex = allCards.indexOf(targetCard); 
-
-            resetToInitial(); updateCubeMaterials(); 
-
-            for (let i = 0; i <= targetIndex; i++) { 
-
-                const card = allCards[i]; 
-
-                const type = card.querySelector('.type-sel').value; 
-
-                const layers = card.dataset.layers.split(',').filter(x => x).map(Number); 
-
-                const speed = parseInt(card.querySelector('.speed-sel').value); 
-
-                const layerDirMap = {}; const layerAngleMap = {}; 
-
-                card.querySelectorAll('.layer-dir').forEach(sel => { layerDirMap[sel.dataset.layer] = sel.value; }); 
-
-                card.querySelectorAll('.layer-angle').forEach(sel => { layerAngleMap[sel.dataset.layer] = parseInt(sel.value); }); 
-
-                if (type !== 'none' && layers.length > 0) await performMultiDirectionRotation(type, layers, layerDirMap, layerAngleMap, speed); 
-
-            } 
-
-            let waitTime = 1200;
-
-            while(waitTime > 0) { if(!isPaused) waitTime -= 16; await new Promise(r => setTimeout(r, 16)); }
-
-            resetToInitial(); updateCubeMaterials(); 
-
-            document.getElementById('motion-pause-btn').style.display = 'none';
-
-            isAnimating = false; 
-
-        };
-
-
-
-        window.runAllSteps = async function() { if (isAnimating) return; isAnimating = true; isPaused = false; await internalRunAll(true, true); isAnimating = false; };
-
-        
-
-        window.startExport = async function() { 
-
-            if (controls.enabled) { alert("请先点击锁定魔方位置！"); return; } 
-
-            if (isAnimating) return; 
-
-            isPaused = false;
-
-            const guide = document.getElementById('viewport-guide').getBoundingClientRect();
-
-            const canvasRect = renderer.domElement.getBoundingClientRect();
-
-            const dpr = window.devicePixelRatio;
-
-            offscreenCanvas.width = guide.width * dpr; offscreenCanvas.height = guide.height * dpr;
-
-            chunks = [];
-
-            const stream = offscreenCanvas.captureStream(60);
-
-            mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8000000 });
-
-            mediaRecorder.ondataavailable = e => chunks.push(e.data);
-
-            mediaRecorder.onstop = () => { document.getElementById('download-video-btn').style.display = 'block'; };
-
-            const sx = (guide.left - canvasRect.left) * dpr, sy = (guide.top - canvasRect.top) * dpr, sw = guide.width * dpr, sh = guide.height * dpr;
-
-            const recordFrame = () => {
-
-                offscreenCtx.fillStyle = innerBgColor; offscreenCtx.fillRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
-
-                if (innerBgImg) offscreenCtx.drawImage(innerBgImg, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
-
-                offscreenCtx.drawImage(renderer.domElement, sx, sy, sw, sh, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
-
-                if (mediaRecorder.state === 'recording') requestAnimationFrame(recordFrame);
-
-            };
-
-            mediaRecorder.start(); recordFrame(); isAnimating = true;
-
-            await new Promise(r => setTimeout(r, 1500)); 
-
-            await internalRunAll(false, false);
-
-            isAnimating = false; 
-
-            setTimeout(() => mediaRecorder.stop(), 500);
-
-        };
-
-
-
-        window.updateViewport = () => { const ratioStr = document.getElementById('aspect-ratio').value; const [w, h] = ratioStr.split(':').map(Number); const container = document.getElementById('canvas-container'); const guide = document.getElementById('viewport-guide'); const bgCanvas = document.getElementById('bg-render-canvas'); const dpr = window.devicePixelRatio; const padding = 100; const maxW = container.clientWidth - padding; const maxH = container.clientHeight - padding - 60; let vw, vh; if (maxW / maxH > w / h) { vh = maxH; vw = vh * (w / h); } else { vw = maxW; vh = vw * (h / w); } guide.style.width = vw + 'px'; guide.style.height = vh + 'px'; guide.style.display = 'block'; bgCanvas.width = vw * dpr; bgCanvas.height = vh * dpr; bgCanvas.style.width = vw + 'px'; bgCanvas.style.height = vh + 'px'; bgCanvas.style.display = 'block'; scene.background = null; renderInnerBackground(); };
-
-        function renderInnerBackground() { const bgCanvas = document.getElementById('bg-render-canvas'); const ctx = bgCanvas.getContext('2d'); ctx.clearRect(0, 0, bgCanvas.width, bgCanvas.height); ctx.fillStyle = innerBgColor; ctx.fillRect(0, 0, bgCanvas.width, bgCanvas.height); if (innerBgImg) ctx.drawImage(innerBgImg, 0, 0, bgCanvas.width, bgCanvas.height); }
-
-        window.setBackground = (type, val) => { if (type === 'color') { innerBgColor = val; innerBgImg = null; document.getElementById('bg-color-picker').value = val; } else { const file = val.files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => { const img = new Image(); img.onload = () => { innerBgImg = img; renderInnerBackground(); }; img.src = e.target.result; }; reader.readAsDataURL(file); } } renderInnerBackground(); };
-
-        
-
-        window.enterPreviewMode = function() { 
-
-            document.getElementById('left-panel').style.display = 'none'; 
-
-            document.getElementById('preview-controls').style.display = 'flex'; 
-
-            document.getElementById('preview-tips').style.display = 'block'; 
-
-            // 隐藏底部小字
-
-            document.getElementById('fixed-footer-text').style.opacity = '0';
-
-            setTimeout(() => { 
-
-                const cw = document.getElementById('canvas-container').clientWidth; 
-
-                const ch = document.getElementById('canvas-container').clientHeight; 
-
-                renderer.setSize(cw, ch); 
-
-                camera.aspect = cw / ch; 
-
-                camera.updateProjectionMatrix(); 
-
-                updateViewport(); 
-
-            }, 100); 
-
-        };
-
-        
-
-        window.exitPreviewMode = function() { 
-
-            document.getElementById('left-panel').style.display = 'flex'; 
-
-            document.getElementById('viewport-guide').style.display = 'none'; 
-
-            document.getElementById('bg-render-canvas').style.display = 'none'; 
-
-            document.getElementById('preview-controls').style.display = 'none'; 
-
-            document.getElementById('preview-tips').style.display = 'none'; 
-
-            document.getElementById('bg-settings-menu').style.display = 'none'; 
-
-            document.getElementById('download-video-btn').style.display = 'none'; 
-
-            // 显示底部小字
-
-            document.getElementById('fixed-footer-text').style.opacity = '1';
-
-            controls.enabled = true; 
-
-            scene.background = new THREE.Color(0xffffff); 
-
-            setTimeout(() => { 
-
-                const cw = document.getElementById('canvas-container').clientWidth; 
-
-                const ch = document.getElementById('canvas-container').clientHeight; 
-
-                renderer.setSize(cw, ch); 
-
-                camera.aspect = cw / ch; 
-
-                camera.updateProjectionMatrix(); 
-
-            }, 100); 
-
-        };
-
-
-
-        window.manualReset = () => { if (isAnimating) return; resetToInitial(); updateCubeMaterials(); };
-
-        window.toggleLock = () => { if (!controls.enabled) { controls.enabled = true; document.getElementById('lock-btn').classList.remove('active'); } else { controls.enabled = false; document.getElementById('lock-btn').classList.add('active'); } };
-
-        function resetToInitial() { cubes.forEach(cube => { const initPos = cube.userData.initialPos; cube.position.set(initPos.x, initPos.y, initPos.z); cube.rotation.set(0, 0, 0); cube.matrix.identity(); cube.userData.grid = { ...initPos }; }); }
-
-        function animate() { requestAnimationFrame(animate); if (controls) controls.update(); renderer.render(scene, camera); }
-
-        
-
-        window.toggleMode = function(mode) { 
-
-            const container = document.getElementById('main-container'); 
-
-            container.classList.remove('photo-active', 'motion-active'); 
-
-            if (mode === 'photo') { 
-
-                container.classList.add('photo-active'); 
-
-                resetToInitial(); 
-
-                updateCubeMaterials(); 
-
-            } else if (mode === 'motion') { 
-
-                container.classList.add('motion-active'); 
-
-            } else if (mode === 'home') { 
-
-                updateCubeMaterials(); 
-
-                resetToInitial(); 
-
-            } 
-
-            document.getElementById('motion-pause-btn').style.display = 'none'; 
-
-            isPaused = false; 
-
-            setTimeout(() => { 
-
-                const cw = document.getElementById('canvas-container').clientWidth; 
-
-                const ch = document.getElementById('canvas-container').clientHeight; 
-
-                renderer.setSize(cw, ch); 
-
-                camera.aspect = cw / ch; 
-
-                camera.updateProjectionMatrix(); 
-
-            }, 510); 
-
-        };
-
-
-
-        window.toggleBgMenu = () => { const menu = document.getElementById('bg-settings-menu'); menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex'; };
-
-        window.downloadMp4 = () => { const blob = new Blob(chunks, { type: 'video/mp4' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `HD_cube_${Date.now()}.mp4`; a.click(); };
-
-        function createCube(radius) { const old = scene.getObjectByName('cubeGroup'); if(old) { old.children.forEach(c=>{c.geometry.dispose(); c.material.forEach(m=>m.dispose());}); scene.remove(old); } const group = new THREE.Group(); group.name = 'cubeGroup'; cubes = []; for (let x=-1; x<=1; x++) for (let y=-1; y<=1; y++) for (let z=-1; z<=1; z++) { const geom = radius>0 ? new RoundedBoxGeometry(0.99,0.99,0.99,4,radius) : new THREE.BoxGeometry(0.99,0.99,0.99); const mats = Array.from({length:6}, ()=>new THREE.MeshStandardMaterial({roughness:0, metalness:0, transparent: true, emissive: 0xffffff, emissiveIntensity: 0.12})); const m = new THREE.Mesh(geom, mats); m.position.set(x,y,z); m.userData = {grid:{x,y,z}, initialPos:{x,y,z}}; group.add(m); cubes.push(m); } scene.add(group); updateCubeMaterials(); }
-
-        
-
-        function updateCubeMaterials() { cubes.forEach(cube => { const p = cube.userData.grid; for (let i = 0; i < 6; i++) { const gx = Math.round(p.x), gy = Math.round(p.y), gz = Math.round(p.z); const isOuter = (i===0 && gx===1) || (i===1 && gx===-1) || (i===2 && gy===1) || (i===3 && gy===-1) || (i===4 && gz===1) || (i===5 && gz===-1); if (isOuter) { const tex = renderLayeredTexture(i, getGridMapping(i, {x:gx, y:gy, z:gz})); cube.material[i].map = tex; cube.material[i].emissiveMap = tex; cube.material[i].color.set(0xffffff); } else { cube.material[i].map = null; cube.material[i].emissiveMap = null; cube.material[i].color.set(document.getElementById('lineColor').value); } cube.material[i].needsUpdate = true; } }); }
-
-        
-
-        function renderLayeredTexture(f, g) { const size = 512; const canvas = document.createElement('canvas'); canvas.width = size; canvas.height = size; const ctx = canvas.getContext('2d'); const d = faceData[f]; ctx.fillStyle = document.getElementById('faceColor').value; ctx.fillRect(0, 0, size, size); if (d.img) { const r = (size * 3) / 300; ctx.save(); ctx.translate(-g.col * size, -g.row * size); ctx.translate(d.rect.x * r + d.rect.w * r/2, d.rect.y * r + d.rect.h * r/2); ctx.rotate(d.rotation * Math.PI / 180); ctx.drawImage(d.img, -d.rect.w * r/2, -d.rect.h * r/2, d.rect.w * r, d.rect.h * r); ctx.restore(); } const lC = document.getElementById('lineColor').value, lW = document.getElementById('lineWidth').value, lO = document.getElementById('lineOpacity').value; if (lW > 0) { const r=parseInt(lC.slice(1,3),16), g=parseInt(lC.slice(3,5),16), b=parseInt(lC.slice(5,7),16); ctx.strokeStyle = `rgba(${r},${g},${b},${lO})`; ctx.lineWidth = lW * 4; ctx.strokeRect(0, 0, size, size); } const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; return texture; }
-
-        function onCubeClick(e) { const r = renderer.domElement.getBoundingClientRect(); const m = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); const ray = new THREE.Raycaster(); ray.setFromCamera(m, camera); const intersects = ray.intersectObjects(cubes); if (intersects.length > 0 && document.getElementById('main-container').classList.contains('photo-active')) { selectedFaceDir = intersects[0].face.materialIndex; document.getElementById('face-name').innerText = "编辑面：" + ["右","左","上","下","前","后"][selectedFaceDir]; renderUI(); } }
-
-        function getGridMapping(f, p) { if (f===4) return { col: p.x+1, row: 1-p.y }; if (f===5) return { col: 1-p.x, row: 1-p.y }; if (f===2) return { col: p.x+1, row: p.z+1 }; if (f===3) return { col: p.x+1, row: 1-p.z }; if (f===0) return { col: 1-p.z, row: 1-p.y }; return { col: p.z+1, row: 1-p.y }; }
-
-        function initTransformLogic() { const el = document.getElementById('transform-container'); let isD = false, isR = false, cH = null, sX, sY, sRect; el.onmousedown = (e) => { e.stopPropagation(); sX = e.clientX; sY = e.clientY; sRect = { ...faceData[selectedFaceDir].rect }; if (e.target.classList.contains('handle')) { isR = true; cH = e.target; } else isD = true; }; window.onmousemove = (e) => { if (!isD && !isR) return; const dx = e.clientX - sX, dy = e.clientY - sY; const r = faceData[selectedFaceDir].rect; if (isD) { r.x = sRect.x + dx; r.y = sRect.y + dy; } else if (isR) { if (cH.classList.contains('e')) r.w = sRect.w + dx; if (cH.classList.contains('w')) { r.w = sRect.w - dx; r.x = sRect.x + dx; } if (cH.classList.contains('s')) r.h = sRect.h + dy; if (cH.classList.contains('n')) { r.h = sRect.h - dy; r.y = sRect.y + dy; } } renderUI(); updateCubeMaterials(); }; window.onmouseup = () => isD = isR = false; }
-
-        function renderUI() { if(selectedFaceDir===null) return; const d = faceData[selectedFaceDir]; const el = document.getElementById('transform-container'); el.style.display = 'block'; el.style.left = d.rect.x + 'px'; el.style.top = d.rect.y + 'px'; el.style.width = d.rect.w + 'px'; el.style.height = d.rect.h + 'px'; document.getElementById('preview-img-ui').src = d.img ? d.img.src : ''; document.getElementById('preview-img-ui').style.transform = `rotate(${d.rotation}deg)`; }
-
-        window.handleUpload = (e) => { const r = new FileReader(); r.onload = (ev) => { const img = new Image(); img.onload = () => { faceData[selectedFaceDir].img = img; renderUI(); updateCubeMaterials(); }; img.src = ev.target.result; }; r.readAsDataURL(e.target.files[0]); };
-
-        window.rotateImage = () => { faceData[selectedFaceDir].rotation = (faceData[selectedFaceDir].rotation + 90) % 360; renderUI(); updateCubeMaterials(); };
-
-        window.changeShape = (r) => createCube(r);
-
-        window.addNewStep = function() { stepCount++; const container = document.getElementById('steps-container'); const card = document.createElement('div'); card.className = 'step-card'; card.id = `step-${stepCount}`; card.dataset.layers = ""; card.innerHTML = `<div style="position:absolute; right:10px; top:10px; cursor:pointer;" onclick="this.parentElement.remove()">✕</div><span class="step-title">步骤 ${stepCount}</span><div class="step-row"><label>旋转轴:</label><select class="type-sel"><option value="none">请选择</option><option value="x">X轴 (左右切面)</option><option value="y">Y轴 (深度切面)</option><option value="z">Z轴 (上下切面)</option></select></div><div class="step-row"><div class="multi-select"><div class="multi-btn" onclick="toggleLayer(${stepCount}, 1, this)">1</div><div class="multi-btn" onclick="toggleLayer(${stepCount}, 2, this)">2</div><div class="multi-btn" onclick="toggleLayer(${stepCount}, 3, this)">3</div></div></div><div id="dir-container-${stepCount}" class="dir-controls" style="display:none"></div><div class="step-row"><label>执行时长:</label><input class="speed-sel" type="range" min="1" max="10" value="5"></div><button class="run-step-btn" onclick="runSingleStep(${stepCount})">试运行此步</button>`; container.appendChild(card); };
-
-        window.toggleLayer = (s,l,b) => { b.classList.toggle('active'); let c=document.getElementById(`step-${s}`); let ls=c.dataset.layers.split(',').filter(x=>x); if(b.classList.contains('active')) ls.push(l); else ls=ls.filter(x=>x!=l); c.dataset.layers=ls.join(','); updateDirUI(s,ls); };
-
-        function updateDirUI(s,ls){ let c=document.getElementById(`dir-container-${s}`); if(!ls.length){c.style.display='none';return;} c.style.display='flex'; c.innerHTML='每层设置:'; ls.sort().forEach(l=>{ let i=document.createElement('div'); i.className='dir-item'; i.innerHTML=`层${l}: <select class="layer-dir" data-layer="${l}"><option value="cw">顺时针</option><option value="ccw">逆时针</option></select><select class="layer-angle" data-layer="${l}"><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option><option value="360">360°</option></select>`; c.appendChild(i); }); }
-
-        init();
-
-    </script>
-
+</div>
+</div>
+</div>
+<script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+let scene, camera, renderer, controls, cubes = [];
+let ambientLight, dirLight;
+let selectedFaceDir = null, isAnimating = false, stepCount = 0;
+let faceData = Array.from({length:6}, () => ({ img: null, rotation: 0, rect: { x: 0, y: 0, w: 300, h: 300 } }));
+
+let mediaRecorder, chunks = [];
+let innerBgColor = "#ffffff", innerBgImg = null;
+let offscreenCanvas, offscreenCtx;
+let isPaused = false;
+
+// 打赏弹窗逻辑
+window.openReward = () => { document.getElementById('reward-modal').style.display = 'flex'; };
+window.closeReward = () => { document.getElementById('reward-modal').style.display = 'none'; };
+
+window.togglePause = () => {
+isPaused = !isPaused;
+const btn = document.getElementById('motion-pause-btn');
+btn.innerText = isPaused ? "继续运动" : "暂停运动";
+btn.style.background = isPaused ? "#86A697" : "#B8A398";
+};
+function init() {
+scene = new THREE.Scene();
+scene.background = new THREE.Color(0xffffff);
+const container = document.getElementById('canvas-container');
+camera = new THREE.PerspectiveCamera(45, container.clientWidth/container.clientHeight, 0.1, 1000);
+camera.position.set(6, 6, 6);
+
+renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(container.clientWidth, container.clientHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.domElement.style.position = 'relative';
+renderer.domElement.style.zIndex = '10';
+container.appendChild(renderer.domElement);
+
+controls = new OrbitControls(camera, renderer.domElement);
+ambientLight = new THREE.AmbientLight(0xffffff, 2.2); scene.add(ambientLight);
+dirLight = new THREE.DirectionalLight(0xffffff, 0.8); dirLight.position.set(5, 5, 5); scene.add(dirLight);
+createCube(0);
+['faceColor', 'lineColor', 'lineWidth', 'lineOpacity'].forEach(id => {
+document.getElementById(id).addEventListener('input', updateCubeMaterials);
+});
+document.getElementById('sceneBrightness').addEventListener('input', (e) => {
+const val = parseFloat(e.target.value);
+ambientLight.intensity = val;
+dirLight.intensity = val * 0.36;
+});
+initTransformLogic(); addNewStep(); animate();
+container.addEventListener('mousedown', onCubeClick);
+offscreenCanvas = document.createElement('canvas');
+offscreenCtx = offscreenCanvas.getContext('2d');
+}
+async function performMultiDirectionRotation(type, layers, layerDirMap, layerAngleMap, speed) {
+return new Promise((resolve) => {
+const groups = [];
+const maxAngle = Math.max(...Object.values(layerAngleMap));
+layers.forEach(layerNum => {
+const group = new THREE.Group();
+let axis;
+if (type === 'x') axis = new THREE.Vector3(1, 0, 0);
+else if (type === 'y') axis = new THREE.Vector3(0, 0, 1);
+else axis = new THREE.Vector3(0, 1, 0);
+const angle = layerAngleMap[layerNum];
+group.userData = {
+targetRad: (angle * Math.PI / 180) * (layerDirMap[layerNum] === 'cw' ? -1 : 1),
+totalRad: angle * Math.PI / 180,
+axis: axis,
+currentRad: 0,
+stepSpeed: (angle / maxAngle) * speed * 0.015
+};
+scene.add(group);
+const targetIdx = layerNum - 1;
+cubes.forEach(cube => {
+const pos = cube.userData.grid;
+let match = false;
+if (type === 'x') match = (Math.round(pos.x) === (1 - targetIdx));
+else if (type === 'y') match = (Math.round(pos.z) === (1 - targetIdx));
+else if (type === 'z') match = (Math.round(pos.y) === (targetIdx - 1));
+if (match) group.add(cube);
+});
+groups.push(group);
+});
+function anim() {
+if (isPaused) { requestAnimationFrame(anim); return; }
+let done = true;
+groups.forEach(g => {
+const rem = g.userData.totalRad - Math.abs(g.userData.currentRad);
+if (rem > 0.001) {
+done = false;
+const step = (g.userData.stepSpeed > rem ? rem : g.userData.stepSpeed) * Math.sign(g.userData.targetRad);
+g.rotateOnAxis(g.userData.axis, step);
+g.userData.currentRad += step;
+}
+});
+if (!done) requestAnimationFrame(anim);
+else {
+groups.forEach(g => {
+const m = new THREE.Matrix4();
+[...g.children].forEach(c => {
+c.updateMatrixWorld();
+m.copy(c.matrixWorld);
+scene.add(c);
+c.matrix.copy(m);
+c.matrix.decompose(c.position, c.quaternion, c.scale);
+c.position.set(Math.round(c.position.x), Math.round(c.position.y), Math.round(c.position.z));
+c.userData.grid = { ...c.position };
+});
+scene.remove(g);
+});
+resolve();
+}
+}
+anim();
+});
+}
+async function internalRunAll(shouldAutoReset = true, showPauseUI = false) {
+resetToInitial(); updateCubeMaterials();
+if (showPauseUI) document.getElementById('motion-pause-btn').style.display = 'block';
+const cards = document.querySelectorAll('.step-card');
+for (let card of cards) {
+const type = card.querySelector('.type-sel').value;
+const layers = card.dataset.layers.split(',').filter(x => x).map(Number);
+const speed = parseInt(card.querySelector('.speed-sel').value);
+const layerDirMap = {}; const layerAngleMap = {};
+card.querySelectorAll('.layer-dir').forEach(sel => { layerDirMap[sel.dataset.layer] = sel.value; });
+card.querySelectorAll('.layer-angle').forEach(sel => { layerAngleMap[sel.dataset.layer] = parseInt(sel.value); });
+if (type !== 'none' && layers.length > 0) {
+await performMultiDirectionRotation(type, layers, layerDirMap, layerAngleMap, speed);
+await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+}
+}
+if (shouldAutoReset) {
+let waitTime = 1200;
+while(waitTime > 0) { if (!isPaused) waitTime -= 16; await new Promise(r => setTimeout(r, 16)); }
+resetToInitial(); updateCubeMaterials();
+}
+document.getElementById('motion-pause-btn').style.display = 'none';
+isPaused = false;
+}
+window.runSingleStep = async function(id) {
+if (isAnimating) return; isAnimating = true; isPaused = false;
+document.getElementById('motion-pause-btn').style.display = 'block';
+const allCards = Array.from(document.querySelectorAll('.step-card'));
+const targetCard = document.getElementById(`step-${id}`);
+const targetIndex = allCards.indexOf(targetCard);
+resetToInitial(); updateCubeMaterials();
+for (let i = 0; i <= targetIndex; i++) {
+const card = allCards[i];
+const type = card.querySelector('.type-sel').value;
+const layers = card.dataset.layers.split(',').filter(x => x).map(Number);
+const speed = parseInt(card.querySelector('.speed-sel').value);
+const layerDirMap = {}; const layerAngleMap = {};
+card.querySelectorAll('.layer-dir').forEach(sel => { layerDirMap[sel.dataset.layer] = sel.value; });
+card.querySelectorAll('.layer-angle').forEach(sel => { layerAngleMap[sel.dataset.layer] = parseInt(sel.value); });
+if (type !== 'none' && layers.length > 0) await performMultiDirectionRotation(type, layers, layerDirMap, layerAngleMap, speed);
+}
+let waitTime = 1200;
+while(waitTime > 0) { if(!isPaused) waitTime -= 16; await new Promise(r => setTimeout(r, 16)); }
+resetToInitial(); updateCubeMaterials();
+document.getElementById('motion-pause-btn').style.display = 'none';
+isAnimating = false;
+};
+window.runAllSteps = async function() { if (isAnimating) return; isAnimating = true; isPaused = false; await internalRunAll(true, true); isAnimating = false;
+};
+
+window.startExport = async function() {
+if (controls.enabled) { alert("请先点击锁定魔方位置！"); return; }
+if (isAnimating) return;
+isPaused = false;
+const guide = document.getElementById('viewport-guide').getBoundingClientRect();
+const canvasRect = renderer.domElement.getBoundingClientRect();
+const dpr = window.devicePixelRatio;
+offscreenCanvas.width = guide.width * dpr; offscreenCanvas.height = guide.height * dpr;
+chunks = [];
+const stream = offscreenCanvas.captureStream(60);
+mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8000000 });
+mediaRecorder.ondataavailable = e => chunks.push(e.data);
+mediaRecorder.onstop = () => { document.getElementById('download-video-btn').style.display = 'block'; };
+const sx = (guide.left - canvasRect.left) * dpr, sy = (guide.top - canvasRect.top) * dpr, sw = guide.width * dpr, sh = guide.height * dpr;
+const recordFrame = () => {
+offscreenCtx.fillStyle = innerBgColor; offscreenCtx.fillRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+if (innerBgImg) offscreenCtx.drawImage(innerBgImg, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
+offscreenCtx.drawImage(renderer.domElement, sx, sy, sw, sh, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
+if (mediaRecorder.state === 'recording') requestAnimationFrame(recordFrame);
+};
+mediaRecorder.start(); recordFrame(); isAnimating = true;
+await new Promise(r => setTimeout(r, 1500));
+await internalRunAll(false, false);
+isAnimating = false;
+setTimeout(() => mediaRecorder.stop(), 500);
+};
+window.updateViewport = () => { const ratioStr = document.getElementById('aspect-ratio').value; const [w, h] = ratioStr.split(':').map(Number); const container = document.getElementById('canvas-container');
+const guide = document.getElementById('viewport-guide'); const bgCanvas = document.getElementById('bg-render-canvas'); const dpr = window.devicePixelRatio; const padding = 100;
+const maxW = container.clientWidth - padding; const maxH = container.clientHeight - padding - 60; let vw, vh;
+if (maxW / maxH > w / h) { vh = maxH; vw = vh * (w / h);
+} else { vw = maxW; vh = vw * (h / w); } guide.style.width = vw + 'px';
+guide.style.height = vh + 'px'; guide.style.display = 'block'; bgCanvas.width = vw * dpr; bgCanvas.height = vh * dpr;
+bgCanvas.style.width = vw + 'px'; bgCanvas.style.height = vh + 'px'; bgCanvas.style.display = 'block'; scene.background = null; renderInnerBackground(); };
+function renderInnerBackground() { const bgCanvas = document.getElementById('bg-render-canvas'); const ctx = bgCanvas.getContext('2d'); ctx.clearRect(0, 0, bgCanvas.width, bgCanvas.height); ctx.fillStyle = innerBgColor;
+ctx.fillRect(0, 0, bgCanvas.width, bgCanvas.height); if (innerBgImg) ctx.drawImage(innerBgImg, 0, 0, bgCanvas.width, bgCanvas.height); }
+window.setBackground = (type, val) => { if (type === 'color') { innerBgColor = val; innerBgImg = null; document.getElementById('bg-color-picker').value = val;
+} else { const file = val.files[0]; if (file) { const reader = new FileReader();
+reader.onload = (e) => { const img = new Image(); img.onload = () => { innerBgImg = img; renderInnerBackground(); };
+img.src = e.target.result; }; reader.readAsDataURL(file); } } renderInnerBackground(); };
+
+window.enterPreviewMode = function() {
+document.getElementById('left-panel').style.display = 'none';
+document.getElementById('preview-controls').style.display = 'flex';
+document.getElementById('preview-tips').style.display = 'block';
+document.getElementById('fixed-footer-text').style.opacity = '0';
+setTimeout(() => {
+const cw = document.getElementById('canvas-container').clientWidth;
+const ch = document.getElementById('canvas-container').clientHeight;
+renderer.setSize(cw, ch);
+camera.aspect = cw / ch;
+camera.updateProjectionMatrix();
+updateViewport();
+}, 100);
+};
+
+window.exitPreviewMode = function() {
+document.getElementById('left-panel').style.display = 'flex';
+document.getElementById('viewport-guide').style.display = 'none';
+document.getElementById('bg-render-canvas').style.display = 'none';
+document.getElementById('preview-controls').style.display = 'none';
+document.getElementById('preview-tips').style.display = 'none';
+document.getElementById('bg-settings-menu').style.display = 'none';
+document.getElementById('download-video-btn').style.display = 'none';
+document.getElementById('fixed-footer-text').style.opacity = '1';
+controls.enabled = true;
+scene.background = new THREE.Color(0xffffff);
+setTimeout(() => {
+const cw = document.getElementById('canvas-container').clientWidth;
+const ch = document.getElementById('canvas-container').clientHeight;
+renderer.setSize(cw, ch);
+camera.aspect = cw / ch;
+camera.updateProjectionMatrix();
+}, 100);
+};
+window.manualReset = () => { if (isAnimating) return; resetToInitial(); updateCubeMaterials(); };
+window.toggleLock = () => { if (!controls.enabled) { controls.enabled = true; document.getElementById('lock-btn').classList.remove('active'); } else { controls.enabled = false; document.getElementById('lock-btn').classList.add('active');
+} };
+function resetToInitial() { cubes.forEach(cube => { const initPos = cube.userData.initialPos; cube.position.set(initPos.x, initPos.y, initPos.z); cube.rotation.set(0, 0, 0); cube.matrix.identity(); cube.userData.grid = { ...initPos }; });
+}
+function animate() { requestAnimationFrame(animate); if (controls) controls.update(); renderer.render(scene, camera); }
+
+window.toggleMode = function(mode) {
+const container = document.getElementById('main-container');
+container.classList.remove('photo-active', 'motion-active');
+if (mode === 'photo') {
+container.classList.add('photo-active');
+resetToInitial();
+updateCubeMaterials();
+} else if (mode === 'motion') {
+container.classList.add('motion-active');
+} else if (mode === 'home') {
+updateCubeMaterials();
+resetToInitial();
+}
+document.getElementById('motion-pause-btn').style.display = 'none';
+isPaused = false;
+setTimeout(() => {
+const cw = document.getElementById('canvas-container').clientWidth;
+const ch = document.getElementById('canvas-container').clientHeight;
+renderer.setSize(cw, ch);
+camera.aspect = cw / ch;
+camera.updateProjectionMatrix();
+}, 510);
+};
+window.toggleBgMenu = () => { const menu = document.getElementById('bg-settings-menu'); menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex'; };
+window.downloadMp4 = () => { const blob = new Blob(chunks, { type: 'video/mp4' }); const url = URL.createObjectURL(blob);
+const a = document.createElement('a'); a.href = url; a.download = `HD_cube_${Date.now()}.mp4`; a.click(); };
+function createCube(radius) { const old = scene.getObjectByName('cubeGroup'); if(old) { old.children.forEach(c=>{c.geometry.dispose(); c.material.forEach(m=>m.dispose());}); scene.remove(old); } const group = new THREE.Group();
+group.name = 'cubeGroup'; cubes = []; for (let x=-1; x<=1; x++) for (let y=-1; y<=1; y++) for (let z=-1; z<=1; z++) { const geom = radius>0 ?
+new RoundedBoxGeometry(0.99,0.99,0.99,4,radius) : new THREE.BoxGeometry(0.99,0.99,0.99); const mats = Array.from({length:6}, ()=>new THREE.MeshStandardMaterial({roughness:0, metalness:0, transparent: true, emissive: 0xffffff, emissiveIntensity: 0.12}));
+const m = new THREE.Mesh(geom, mats); m.position.set(x,y,z); m.userData = {grid:{x,y,z}, initialPos:{x,y,z}}; group.add(m); cubes.push(m); } scene.add(group); updateCubeMaterials(); }
+
+function updateCubeMaterials() { cubes.forEach(cube => { const p = cube.userData.grid; for (let i = 0; i < 6; i++) { const gx = Math.round(p.x), gy = Math.round(p.y), gz = Math.round(p.z); const isOuter = (i===0 && gx===1) || (i===1 && gx===-1) || (i===2 && gy===1) || (i===3 && gy===-1) || (i===4 && gz===1) || (i===5 && gz===-1); if (isOuter) { const tex = renderLayeredTexture(i, getGridMapping(i, {x:gx, y:gy, z:gz})); cube.material[i].map = tex; cube.material[i].emissiveMap = tex; cube.material[i].color.set(0xffffff); } else { cube.material[i].map = null; cube.material[i].emissiveMap = null; cube.material[i].color.set(document.getElementById('lineColor').value); } cube.material[i].needsUpdate = true; } });
+}
+
+function renderLayeredTexture(f, g) { const size = 512; const canvas = document.createElement('canvas'); canvas.width = size; canvas.height = size;
+const ctx = canvas.getContext('2d'); const d = faceData[f]; ctx.fillStyle = document.getElementById('faceColor').value; ctx.fillRect(0, 0, size, size);
+if (d.img) { const r = (size * 3) / 300; ctx.save(); ctx.translate(-g.col * size, -g.row * size);
+ctx.translate(d.rect.x * r + d.rect.w * r/2, d.rect.y * r + d.rect.h * r/2); ctx.rotate(d.rotation * Math.PI / 180);
+ctx.drawImage(d.img, -d.rect.w * r/2, -d.rect.h * r/2, d.rect.w * r, d.rect.h * r); ctx.restore();
+} const lC = document.getElementById('lineColor').value, lW = document.getElementById('lineWidth').value, lO = document.getElementById('lineOpacity').value; if (lW > 0) { const r=parseInt(lC.slice(1,3),16), g=parseInt(lC.slice(3,5),16), b=parseInt(lC.slice(5,7),16);
+ctx.strokeStyle = `rgba(${r},${g},${b},${lO})`; ctx.lineWidth = lW * 4; ctx.strokeRect(0, 0, size, size); } const texture = new THREE.CanvasTexture(canvas);
+texture.colorSpace = THREE.SRGBColorSpace; return texture; }
+function onCubeClick(e) { const r = renderer.domElement.getBoundingClientRect(); const m = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+const ray = new THREE.Raycaster(); ray.setFromCamera(m, camera); const intersects = ray.intersectObjects(cubes);
+if (intersects.length > 0 && document.getElementById('main-container').classList.contains('photo-active')) { selectedFaceDir = intersects[0].face.materialIndex; document.getElementById('face-name').innerText = "编辑面：" + ["右","左","上","下","前","后"][selectedFaceDir]; renderUI(); } }
+function getGridMapping(f, p) { if (f===4) return { col: p.x+1, row: 1-p.y };
+if (f===5) return { col: 1-p.x, row: 1-p.y }; if (f===2) return { col: p.x+1, row: p.z+1 };
+if (f===3) return { col: p.x+1, row: 1-p.z }; if (f===0) return { col: 1-p.z, row: 1-p.y };
+return { col: p.z+1, row: 1-p.y }; }
+function initTransformLogic() { const el = document.getElementById('transform-container'); let isD = false, isR = false, cH = null, sX, sY, sRect;
+el.onmousedown = (e) => { e.stopPropagation(); sX = e.clientX; sY = e.clientY; sRect = { ...faceData[selectedFaceDir].rect };
+if (e.target.classList.contains('handle')) { isR = true; cH = e.target; } else isD = true; };
+window.onmousemove = (e) => { if (!isD && !isR) return;
+const dx = e.clientX - sX, dy = e.clientY - sY; const r = faceData[selectedFaceDir].rect;
+if (isD) { r.x = sRect.x + dx; r.y = sRect.y + dy;
+} else if (isR) { if (cH.classList.contains('e')) r.w = sRect.w + dx; if (cH.classList.contains('w')) { r.w = sRect.w - dx;
+r.x = sRect.x + dx; } if (cH.classList.contains('s')) r.h = sRect.h + dy;
+if (cH.classList.contains('n')) { r.h = sRect.h - dy; r.y = sRect.y + dy; } } renderUI(); updateCubeMaterials(); };
+window.onmouseup = () => isD = isR = false; }
+function renderUI() { if(selectedFaceDir===null) return; const d = faceData[selectedFaceDir]; const el = document.getElementById('transform-container'); el.style.display = 'block';
+el.style.left = d.rect.x + 'px'; el.style.top = d.rect.y + 'px'; el.style.width = d.rect.w + 'px'; el.style.height = d.rect.h + 'px';
+document.getElementById('preview-img-ui').src = d.img ? d.img.src : ''; document.getElementById('preview-img-ui').style.transform = `rotate(${d.rotation}deg)`; }
+window.handleUpload = (e) => { const r = new FileReader(); r.onload = (ev) => { const img = new Image();
+img.onload = () => { faceData[selectedFaceDir].img = img; renderUI(); updateCubeMaterials(); }; img.src = ev.target.result; }; r.readAsDataURL(e.target.files[0]); };
+window.rotateImage = () => { faceData[selectedFaceDir].rotation = (faceData[selectedFaceDir].rotation + 90) % 360; renderUI(); updateCubeMaterials(); };
+window.changeShape = (r) => createCube(r);
+window.addNewStep = function() { stepCount++; const container = document.getElementById('steps-container'); const card = document.createElement('div'); card.className = 'step-card'; card.id = `step-${stepCount}`;
+card.dataset.layers = ""; card.innerHTML = `<div style="position:absolute; right:10px; top:10px; cursor:pointer;"
+onclick="this.parentElement.remove()"> ✕ </div><span class="step-title">步骤 ${stepCount}</span><div class="step-row"><label>旋转轴:</label><select class="type-sel"><option value="none">请选择</option><option value="x">X轴 (左右切面)</option><option value="y">Y轴 (深度切面)</option><option value="z">Z轴 (上下切面)</option></select></div><div class="step-row"><div class="multi-select"><div class="multi-btn" onclick="toggleLayer(${stepCount}, 1, this)">1</div><div class="multi-btn" onclick="toggleLayer(${stepCount}, 2, this)">2</div><div class="multi-btn" onclick="toggleLayer(${stepCount}, 3, this)">3</div></div></div><div id=\"dir-container-${stepCount}\" class=\"dir-controls\" style=\"display:none\"></div><div class=\"step-row\"><label>执行时长:</label><input class=\"speed-sel\" type=\"range\" min=\"1\" max=\"10\" value=\"5\"></div><button class=\"run-step-btn\" onclick=\"runSingleStep(${stepCount})\">试运行此步</button>`;
+container.appendChild(card); };
+window.toggleLayer = (s,l,b) => { b.classList.toggle('active'); let c=document.getElementById(`step-${s}`); let ls=c.dataset.layers.split(',').filter(x=>x); if(b.classList.contains('active')) ls.push(l); else ls=ls.filter(x=>x!=l); c.dataset.layers=ls.join(','); updateDirUI(s,ls); };
+function updateDirUI(s,ls){ let c=document.getElementById(`dir-container-${s}`); if(!ls.length){c.style.display='none';return;} c.style.display='flex'; c.innerHTML='每层设置:'; ls.sort().forEach(l=>{ let i=document.createElement('div'); i.className='dir-item'; i.innerHTML=`层${l}: <select class="layer-dir" data-layer="${l}"><option value="cw">顺时针</option><option value="ccw">逆时针</option></select><select class="layer-angle" data-layer="${l}"><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option><option value="360">360°</option></select>`; c.appendChild(i); });
+}
+init();
+</script>
 </body>
-
 </html>
