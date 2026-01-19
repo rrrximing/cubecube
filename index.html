@@ -6,27 +6,21 @@
 <style>
 /* 基础布局 */
 body { margin: 0; display: flex; height: 100vh; overflow: hidden; background-color: #fcfcfc; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
-
 #left-panel {
 width: 240px; padding: 20px; background: #fff;
 box-shadow: 2px 0 15px rgba(0,0,0,0.03);
 display: flex; flex-direction: column; gap: 15px; z-index: 100; flex-shrink: 0;
 }
-
 #main-container { flex: 1; display: flex; position: relative; overflow: hidden; }
-
 #canvas-container { flex: 1; background: #ffffff; transition: flex 0.5s ease; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center;
 }
-
 #viewport-guide { position: absolute; border: 2px dashed #5A7D9A; pointer-events: none; display: none; z-index: 50; box-shadow: 0 0 0 5000px rgba(255,255,255,0.85);
 }
 #bg-render-canvas { position: absolute; z-index: 1; pointer-events: none; display: none; }
-
 .right-panel-content {
 flex: 0; background: #ffffff; display: none; overflow-x: hidden; overflow-y: auto;
 transition: flex 0.5s ease; border-left: 1px solid #f0f0f0; position: relative;
 }
-
 .photo-active #canvas-container { flex: 1; }
 .photo-active #right-panel-photo { display: flex; flex: 1; flex-direction: row; padding: 60px 20px 40px; justify-content: space-around; align-items: flex-start; }
 .motion-active #canvas-container { flex: 1; }
@@ -37,7 +31,6 @@ background: #f5f5f5; border: 1px solid #eee; border-radius: 6px;
 cursor: pointer; font-size: 13px; color: #666; z-index: 10; transition: all 0.3s;
 }
 .exit-btn:hover { background: #B8A398; color: #fff; border-color: #B8A398; }
-
 .editor-main-zone { display: flex; flex-direction: column; align-items: center; width: 320px; flex-shrink: 0; }
 .motion-steps-zone { display: flex; flex-direction: column; align-items: center; width: 340px; flex-shrink: 0; }
 .tips-box {
@@ -52,21 +45,18 @@ box-shadow: 0 4px 10px rgba(0,0,0,0.03); position: relative;
 position: absolute; bottom: 20px; left: 20px; margin-top: 0; z-index: 400;
 background-color: rgba(247, 249, 250, 0.95); display: none;
 }
-
 .tips-close-btn { position: absolute; top: 10px; right: 12px; cursor: pointer; font-size: 16px; color: #9BA9B4; font-weight: bold; }
 .tips-title { font-weight: bold; color: #5A7D9A; font-size: 15px; margin-bottom: 12px; display: block; border-bottom: 1px solid #E1E8ED; padding-bottom: 5px; }
 .tips-img { width: 100%; border-radius: 8px; margin-bottom: 15px; border: 1px solid #E1E8ED; background: #fff; }
 button { padding: 10px; cursor: pointer; border: 1px solid #eee; background: white; border-radius: 8px; font-size: 13px; color: #5C6E7E;
 transition: all 0.3s; }
 button:hover { background: #f9f9f9; border-color: #ddd; }
-
 button.primary { background: #5A7D9A; color: white; border: none; margin-top: 5px; font-weight: 500; }
 button.primary:hover { background: #4A6A85; box-shadow: 0 4px 10px rgba(90,125,154,0.3); }
 .run-step-btn, #run-all-btn, #download-video-btn { background: #86A697 !important; color: white !important; border: none !important; }
 .step-card { width: 100%; background: #fdfdfd; border: 1px solid #f0f0f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; position: relative; box-sizing: border-box;
 }
 .step-title { font-weight: bold; color: #5A7D9A; margin-bottom: 10px; display: block; border-bottom: 1px solid #f0f0f0; }
-
 #preview-controls {
 position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
 display: none; gap: 12px; background: rgba(255,255,255,0.95);
@@ -102,7 +92,6 @@ z-index: 2000; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
 .multi-btn.active { background: #5A7D9A; color: #fff; border-color: #5A7D9A; }
 .dir-controls { display: flex; flex-direction: column; gap: 5px; background: #f8f9fa; padding: 10px; border-radius: 8px; margin-top: 5px; font-size: 12px;
 border: 1px solid #eee; }
-
 /* 调整后的文字位置：从 bottom 改为 top */
 #fixed-footer-text {
 position: fixed;
@@ -117,39 +106,36 @@ pointer-events: none;
 z-index: 9999;
 transition: opacity 0.3s;
 }
-
 /* 打赏弹窗样式 */
 #reward-modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center;
-    z-index: 10000;
+position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center;
+z-index: 10000;
 }
 .reward-content {
-    background: white; padding: 25px; border-radius: 15px; position: relative;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;
+background: white; padding: 25px; border-radius: 15px; position: relative;
+box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;
 }
 .reward-img { max-width: 280px; height: auto; border-radius: 10px; border: 1px solid #eee; }
 .reward-close {
-    position: absolute; top: 10px; right: 15px; cursor: pointer;
-    font-size: 22px; color: #999; font-weight: bold;
+position: absolute; top: 10px; right: 15px; cursor: pointer;
+font-size: 22px; color: #999; font-weight: bold;
 }
 </style>
 </head>
 <body>
 <div id="fixed-footer-text">
 视频版详细教程链接：<br>
-（欢迎在某站关注博主哦( ✿◡‿◡ )
+（欢迎在某站关注博主哦(  ✿◡‿◡  )
 </div>
-
 <div id="reward-modal" onclick="closeReward()">
-    <div class="reward-content" onclick="event.stopPropagation()">
-        <span class="reward-close" onclick="closeReward()">✕</span>
-        <h3 style="color:#5A7D9A; margin-top:0; margin-bottom:15px;">很高兴能帮到您！ ( ✿◡‿◡ )</h3>
-        <img class="reward-img" src="https://s41.ax1x.com/2026/01/19/pZ6188P.jpg" alt="收款码">
-        <p style="font-size:13px; color:#8899a6; margin-top:15px; margin-bottom:0;">无论多少，您的鼓励是我持续更新的最大动力，感谢！</p>
-    </div>
+<div class="reward-content" onclick="event.stopPropagation()">
+<span class="reward-close" onclick="closeReward()"> ✕ </span>
+<h3 style="color:#5A7D9A; margin-top:0; margin-bottom:15px;">很高兴能帮到您！ (  ✿◡‿◡  )</h3>
+<img class="reward-img" src="https://s41.ax1x.com/2026/01/19/pZ6188P.jpg" alt="收款码">
+<p style="font-size:13px; color:#8899a6; margin-top:15px; margin-bottom:0;">无论多少，您的鼓励是我持续更新的最大动力，感谢！</p>
 </div>
-
+</div>
 <div id="left-panel">
 <h2 style="font-size: 18px; color: #5A7D9A; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">魔方配置</h2>
 <div class="control-group"><label>1. 形态</label><div style="display:flex; gap:8px;"><button onclick="changeShape(0)">直角</button><button onclick="changeShape(0.12)">圆角</button></div></div>
@@ -169,10 +155,9 @@ transition: opacity 0.3s;
 <div id="canvas-container">
 <canvas id="bg-render-canvas"></canvas>
 <div id="viewport-guide"></div>
-
 <div id="preview-tips" class="tips-box">
-<div class="tips-close-btn" onclick="this.parentElement.style.display='none'"> ✕ </div>
-<span class="tips-title"> 💡  Tips：</span>
+<div class="tips-close-btn" onclick="this.parentElement.style.display='none'">  ✕  </div>
+<span class="tips-title">  💡   Tips：</span>
 1、强烈建议自己录屏运动过程，那样清晰度会高于网页保存的视频（导出设置太难了博主努力克服中……）
 2、点击播放按钮，会定格1.5秒后开始播放，麻烦耐心一些哦(*^_^*)
 3、播放完需手动点击复原按钮回到初始状态，可以反复播放哦。
@@ -188,20 +173,20 @@ transition: opacity 0.3s;
 <button style="background:#86A697; color:#fff; font-size:11px;" onclick="setBackground('color', '#00ff00')">绿幕</button>
 <button onclick="document.getElementById('bg-file-input').click()">图片</button>
 </div>
-<input type="color" id="bg-color-picker" style="display:none" oninput="setBackground('color', this.value)">
+<input type="color" id="bg-color-picker" style="display:none; position:fixed;" onchange="setBackground('color', this.value)" oninput="setBackground('color', this.value)">
 <input type="file" id="bg-file-input" style="display:none" accept="image/*" onchange="setBackground('image', this)">
 </div>
 <div id="preview-controls">
-<div class="control-dot-btn" onclick="toggleBgMenu()" title="背景"> 🖼️ </div>
-<div id="lock-btn" class="control-dot-btn" onclick="toggleLock()" title="锁定"> 🔒 </div>
-<div class="control-dot-btn" onclick="manualReset()" title="复原魔方"> ↺ </div>
-<div id="play-btn" class="control-dot-btn" onclick="startExport()" title="开始运动并导出"> ▶ </div>
-<div class="control-dot-btn" onclick="exitPreviewMode()" title="退出"> ✕ </div>
+<div class="control-dot-btn" onclick="toggleBgMenu()" title="背景">  🖼️  </div>
+<div id="lock-btn" class="control-dot-btn" onclick="toggleLock()" title="锁定">  🔒  </div>
+<div class="control-dot-btn" onclick="manualReset()" title="复原魔方">  ↺  </div>
+<div id="play-btn" class="control-dot-btn" onclick="startExport()" title="开始运动并导出">  ▶  </div>
+<div class="control-dot-btn" onclick="exitPreviewMode()" title="退出">  ✕  </div>
 </div>
-<button id="download-video-btn" onclick="downloadMp4()" style="position: absolute; bottom: 80px; right: 20px; display: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; z-index: 300;"> 💾  下载高清视频</button>
+<button id="download-video-btn" onclick="downloadMp4()" style="position: absolute; bottom: 80px; right: 20px; display: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; z-index: 300;">  💾   下载高清视频</button>
 </div>
 <div id="right-panel-photo" class="right-panel-content">
-<div class="exit-btn" onclick="toggleMode('home')"> ✕  保存并退出编辑</div>
+<div class="exit-btn" onclick="toggleMode('home')">  ✕   保存并退出编辑</div>
 <div class="editor-main-zone">
 <h3 id="face-name" style="margin-top:0; color: #5A7D9A;">点击魔方选择面</h3>
 <div id="preview-wrapper">
@@ -217,21 +202,21 @@ transition: opacity 0.3s;
 <input type="file" id="file-input" style="display:none;" onchange="handleUpload(event)">
 </div>
 <div class="tips-box">
-<span class="tips-title"> 💡  Tips：</span>
+<span class="tips-title">  💡   Tips：</span>
 1、请务必单击选中魔方的一个面之后再上传图片哦。
 2、上传同一张图片两次可能会卡顿，如果实在想要，可以准备两张一样的图片^_^
 3、将想第一个展示的图片上传到“前面”会便于后续编辑哦。
 </div>
 </div>
 <div id="right-panel-motion" class="right-panel-content">
-<div class="exit-btn" onclick="toggleMode('home')"> ✕  保存并退出</div>
+<div class="exit-btn" onclick="toggleMode('home')">  ✕   保存并退出</div>
 <div class="motion-steps-zone">
 <div id="steps-container" style="width:100%;"></div>
 <div class="add-step-btn" onclick="addNewStep()">+</div>
 <button id="run-all-btn" onclick="runAllSteps()">运行全部步骤</button>
 </div>
 <div class="tips-box">
-<span class="tips-title"> 💡  Tips：</span>
+<span class="tips-title">  💡   Tips：</span>
 <img class="tips-img" src="https://s41.ax1x.com/2026/01/19/pZ6ir3n.png" alt="魔方三轴示意图">
 1、参考图示理解 X、Y、Z 轴切割、运动方向。
 2、每次运行都会从步骤一开始，运行到你选择的步骤结束，定格1.2秒后还原到初始状态。
@@ -248,16 +233,13 @@ let scene, camera, renderer, controls, cubes = [];
 let ambientLight, dirLight;
 let selectedFaceDir = null, isAnimating = false, stepCount = 0;
 let faceData = Array.from({length:6}, () => ({ img: null, rotation: 0, rect: { x: 0, y: 0, w: 300, h: 300 } }));
-
 let mediaRecorder, chunks = [];
 let innerBgColor = "#ffffff", innerBgImg = null;
 let offscreenCanvas, offscreenCtx;
 let isPaused = false;
-
 // 打赏弹窗逻辑
 window.openReward = () => { document.getElementById('reward-modal').style.display = 'flex'; };
 window.closeReward = () => { document.getElementById('reward-modal').style.display = 'none'; };
-
 window.togglePause = () => {
 isPaused = !isPaused;
 const btn = document.getElementById('motion-pause-btn');
@@ -270,7 +252,6 @@ scene.background = new THREE.Color(0xffffff);
 const container = document.getElementById('canvas-container');
 camera = new THREE.PerspectiveCamera(45, container.clientWidth/container.clientHeight, 0.1, 1000);
 camera.position.set(6, 6, 6);
-
 renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(container.clientWidth, container.clientHeight);
@@ -278,7 +259,6 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.domElement.style.position = 'relative';
 renderer.domElement.style.zIndex = '10';
 container.appendChild(renderer.domElement);
-
 controls = new OrbitControls(camera, renderer.domElement);
 ambientLight = new THREE.AmbientLight(0xffffff, 2.2); scene.add(ambientLight);
 dirLight = new THREE.DirectionalLight(0xffffff, 0.8); dirLight.position.set(5, 5, 5); scene.add(dirLight);
@@ -408,7 +388,6 @@ isAnimating = false;
 };
 window.runAllSteps = async function() { if (isAnimating) return; isAnimating = true; isPaused = false; await internalRunAll(true, true); isAnimating = false;
 };
-
 window.startExport = async function() {
 if (controls.enabled) { alert("请先点击锁定魔方位置！"); return; }
 if (isAnimating) return;
@@ -448,7 +427,6 @@ window.setBackground = (type, val) => { if (type === 'color') { innerBgColor = v
 } else { const file = val.files[0]; if (file) { const reader = new FileReader();
 reader.onload = (e) => { const img = new Image(); img.onload = () => { innerBgImg = img; renderInnerBackground(); };
 img.src = e.target.result; }; reader.readAsDataURL(file); } } renderInnerBackground(); };
-
 window.enterPreviewMode = function() {
 document.getElementById('left-panel').style.display = 'none';
 document.getElementById('preview-controls').style.display = 'flex';
@@ -463,7 +441,6 @@ camera.updateProjectionMatrix();
 updateViewport();
 }, 100);
 };
-
 window.exitPreviewMode = function() {
 document.getElementById('left-panel').style.display = 'flex';
 document.getElementById('viewport-guide').style.display = 'none';
@@ -489,7 +466,6 @@ window.toggleLock = () => { if (!controls.enabled) { controls.enabled = true; do
 function resetToInitial() { cubes.forEach(cube => { const initPos = cube.userData.initialPos; cube.position.set(initPos.x, initPos.y, initPos.z); cube.rotation.set(0, 0, 0); cube.matrix.identity(); cube.userData.grid = { ...initPos }; });
 }
 function animate() { requestAnimationFrame(animate); if (controls) controls.update(); renderer.render(scene, camera); }
-
 window.toggleMode = function(mode) {
 const container = document.getElementById('main-container');
 container.classList.remove('photo-active', 'motion-active');
@@ -520,10 +496,8 @@ function createCube(radius) { const old = scene.getObjectByName('cubeGroup'); if
 group.name = 'cubeGroup'; cubes = []; for (let x=-1; x<=1; x++) for (let y=-1; y<=1; y++) for (let z=-1; z<=1; z++) { const geom = radius>0 ?
 new RoundedBoxGeometry(0.99,0.99,0.99,4,radius) : new THREE.BoxGeometry(0.99,0.99,0.99); const mats = Array.from({length:6}, ()=>new THREE.MeshStandardMaterial({roughness:0, metalness:0, transparent: true, emissive: 0xffffff, emissiveIntensity: 0.12}));
 const m = new THREE.Mesh(geom, mats); m.position.set(x,y,z); m.userData = {grid:{x,y,z}, initialPos:{x,y,z}}; group.add(m); cubes.push(m); } scene.add(group); updateCubeMaterials(); }
-
 function updateCubeMaterials() { cubes.forEach(cube => { const p = cube.userData.grid; for (let i = 0; i < 6; i++) { const gx = Math.round(p.x), gy = Math.round(p.y), gz = Math.round(p.z); const isOuter = (i===0 && gx===1) || (i===1 && gx===-1) || (i===2 && gy===1) || (i===3 && gy===-1) || (i===4 && gz===1) || (i===5 && gz===-1); if (isOuter) { const tex = renderLayeredTexture(i, getGridMapping(i, {x:gx, y:gy, z:gz})); cube.material[i].map = tex; cube.material[i].emissiveMap = tex; cube.material[i].color.set(0xffffff); } else { cube.material[i].map = null; cube.material[i].emissiveMap = null; cube.material[i].color.set(document.getElementById('lineColor').value); } cube.material[i].needsUpdate = true; } });
 }
-
 function renderLayeredTexture(f, g) { const size = 512; const canvas = document.createElement('canvas'); canvas.width = size; canvas.height = size;
 const ctx = canvas.getContext('2d'); const d = faceData[f]; ctx.fillStyle = document.getElementById('faceColor').value; ctx.fillRect(0, 0, size, size);
 if (d.img) { const r = (size * 3) / 300; ctx.save(); ctx.translate(-g.col * size, -g.row * size);
@@ -558,7 +532,7 @@ window.rotateImage = () => { faceData[selectedFaceDir].rotation = (faceData[sele
 window.changeShape = (r) => createCube(r);
 window.addNewStep = function() { stepCount++; const container = document.getElementById('steps-container'); const card = document.createElement('div'); card.className = 'step-card'; card.id = `step-${stepCount}`;
 card.dataset.layers = ""; card.innerHTML = `<div style="position:absolute; right:10px; top:10px; cursor:pointer;"
-onclick="this.parentElement.remove()"> ✕ </div><span class="step-title">步骤 ${stepCount}</span><div class="step-row"><label>旋转轴:</label><select class="type-sel"><option value="none">请选择</option><option value="x">X轴 (左右切面)</option><option value="y">Y轴 (深度切面)</option><option value="z">Z轴 (上下切面)</option></select></div><div class="step-row"><div class="multi-select"><div class="multi-btn" onclick="toggleLayer(${stepCount}, 1, this)">1</div><div class="multi-btn" onclick="toggleLayer(${stepCount}, 2, this)">2</div><div class="multi-btn" onclick="toggleLayer(${stepCount}, 3, this)">3</div></div></div><div id=\"dir-container-${stepCount}\" class=\"dir-controls\" style=\"display:none\"></div><div class=\"step-row\"><label>执行时长:</label><input class=\"speed-sel\" type=\"range\" min=\"1\" max=\"10\" value=\"5\"></div><button class=\"run-step-btn\" onclick=\"runSingleStep(${stepCount})\">试运行此步</button>`;
+onclick="this.parentElement.remove()">  ✕  </div><span class="step-title">步骤 ${stepCount}</span><div class="step-row"><label>旋转轴:</label><select class="type-sel"><option value="none">请选择</option><option value="x">X轴 (左右切面)</option><option value="y">Y轴 (深度切面)</option><option value="z">Z轴 (上下切面)</option></select></div><div class="step-row"><div class="multi-select"><div class="multi-btn" onclick="toggleLayer(${stepCount}, 1, this)">1</div><div class="multi-btn" onclick="toggleLayer(${stepCount}, 2, this)">2</div><div class="multi-btn" onclick="toggleLayer(${stepCount}, 3, this)">3</div></div></div><div id=\"dir-container-${stepCount}\" class=\"dir-controls\" style=\"display:none\"></div><div class=\"step-row\"><label>执行时长:</label><input class=\"speed-sel\" type=\"range\" min=\"1\" max=\"10\" value=\"5\"></div><button class=\"run-step-btn\" onclick=\"runSingleStep(${stepCount})\">试运行此步</button>`;
 container.appendChild(card); };
 window.toggleLayer = (s,l,b) => { b.classList.toggle('active'); let c=document.getElementById(`step-${s}`); let ls=c.dataset.layers.split(',').filter(x=>x); if(b.classList.contains('active')) ls.push(l); else ls=ls.filter(x=>x!=l); c.dataset.layers=ls.join(','); updateDirUI(s,ls); };
 function updateDirUI(s,ls){ let c=document.getElementById(`dir-container-${s}`); if(!ls.length){c.style.display='none';return;} c.style.display='flex'; c.innerHTML='每层设置:'; ls.sort().forEach(l=>{ let i=document.createElement('div'); i.className='dir-item'; i.innerHTML=`层${l}: <select class="layer-dir" data-layer="${l}"><option value="cw">顺时针</option><option value="ccw">逆时针</option></select><select class="layer-angle" data-layer="${l}"><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option><option value="360">360°</option></select>`; c.appendChild(i); });
